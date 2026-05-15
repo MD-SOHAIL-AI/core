@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContestPulse — Coding Contest Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #06090f;
+  --bg2:    #0b1120;
+  --card:   #0f1829;
+  --border: #1a2a44;
+  --border2:#243754;
+  --cyan:   #00d4ff;
+  --green:  #00ff88;
+  --orange: #ff6b35;
+  --purple: #b06bff;
+  --red:    #ff4060;
+  --yellow: #ffd700;
+  --text:   #dde6f5;
+  --muted:  #5a7399;
+  --wa:     #25d366;
+  --wa-bg:  #0b141a;
+  --wa-bub: #005c4b;
+  --wa-rec: #1f2c34;
+  --wa-hdr: #1f2c34;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* scanline overlay */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ─── NAVBAR ─── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(6,9,15,.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+  box-shadow:0 4px 30px rgba(0,212,255,.06);
+}
+
+.logo{
+  font-family:'Orbitron',monospace;
+  font-size:1.25rem;font-weight:900;
+  color:var(--cyan);
+  text-shadow:0 0 20px rgba(0,212,255,.6);
+  letter-spacing:2px;
+}
+
+.logo span{color:var(--green);}
+
+.tabs{display:flex;gap:4px;}
+
+.tab-btn{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.95rem;font-weight:600;
+  padding:7px 18px;
+  border-radius:8px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  letter-spacing:.5px;
+  transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
+
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+
+.tab-btn.active{
+  color:var(--cyan);
+  background:rgba(0,212,255,.08);
+  border-color:rgba(0,212,255,.3);
+  text-shadow:0 0 10px rgba(0,212,255,.4);
+}
+
+.badge{
+  background:var(--red);
+  color:#fff;
+  font-size:.65rem;font-weight:700;
+  padding:2px 6px;border-radius:99px;
+  min-width:18px;text-align:center;
+  line-height:1.4;
+}
+
+.refresh-btn{
+  font-family:'Space Mono',monospace;
+  font-size:.75rem;
+  padding:7px 14px;
+  border-radius:8px;
+  border:1px solid var(--border2);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
+
+.refresh-btn:hover{color:var(--cyan);border-color:var(--cyan);}
+
+.refresh-btn.spinning svg{animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── PAGES ─── */
+.page{display:none;padding:28px 20px;max-width:1200px;margin:0 auto;}
+.page.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ─── PAGE HEADER ─── */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;flex-wrap:wrap;gap:12px;
+}
+
+.page-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:700;
+  letter-spacing:1px;
+}
+
+.page-title .accent{color:var(--cyan);}
+
+/* ─── PLATFORM FILTERS ─── */
+.filters{
+  display:flex;gap:8px;flex-wrap:wrap;
+  margin-bottom:24px;
+}
+
+.filter-pill{
+  font-family:'Space Mono',monospace;
+  font-size:.7rem;font-weight:700;
+  padding:5px 14px;
+  border-radius:99px;
+  border:1px solid var(--border2);
+  background:var(--card);
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .2s;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+.filter-pill:hover{color:var(--text);}
+.filter-pill.active{color:#fff;border-color:transparent;}
+
+.filter-pill[data-platform="LeetCode"].active    {background:#ffa116;color:#000;}
+.filter-pill[data-platform="Codeforces"].active  {background:#1f8dd6;color:#fff;}
+.filter-pill[data-platform="CodeChef"].active    {background:#694f3d;color:#fff;}
+.filter-pill[data-platform="AtCoder"].active     {background:#222;color:#fff;border-color:#888;}
+.filter-pill[data-platform="HackerRank"].active  {background:#32c766;color:#000;}
+.filter-pill[data-platform="CodeStudio"].active  {background:#f7931e;color:#000;}
+.filter-pill[data-platform="All"].active         {background:var(--cyan);color:#000;}
+
+/* ─── CONTEST GRID ─── */
+.contest-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+}
+
+/* ─── CONTEST CARD ─── */
+.contest-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  cursor:default;
+}
+
+.contest-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:14px 14px 0 0;
+}
+
+.contest-card[data-platform="LeetCode"]::before    {background:linear-gradient(90deg,#ffa116,#ff6b35);}
+.contest-card[data-platform="Codeforces"]::before  {background:linear-gradient(90deg,#1f8dd6,#00d4ff);}
+.contest-card[data-platform="CodeChef"]::before    {background:linear-gradient(90deg,#694f3d,#a0785a);}
+.contest-card[data-platform="AtCoder"]::before     {background:linear-gradient(90deg,#777,#bbb);}
+.contest-card[data-platform="HackerRank"]::before  {background:linear-gradient(90deg,#32c766,#00ff88);}
+.contest-card[data-platform="CodeStudio"]::before  {background:linear-gradient(90deg,#f7931e,#ffd700);}
+
+.contest-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+
+.contest-card.bookmarked{border-color:rgba(255,215,0,.4);}
+.contest-card.registered{border-left:3px solid var(--green);}
+
+.card-top{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:10px;
+  margin-bottom:12px;
+}
+
+.card-platform{
+  font-family:'Space Mono',monospace;
+  font-size:.65rem;font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border-radius:99px;
+  background:rgba(255,255,255,.06);
+}
+
+.card-actions{display:flex;gap:6px;}
+
+.icon-btn{
+  width:30px;height:30px;border-radius:8px;
+  border:1px solid var(--border2);
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  color:var(--muted);
+  transition:all .15s;
+  font-size:14px;
+}
+
+.icon-btn:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.icon-btn.active-bm{color:var(--yellow);border-color:var(--yellow);}
+.icon-btn.active-reg{color:var(--green);border-color:var(--green);}
+
+.card-name{
+  font-size:1rem;font-weight:700;
+  line-height:1.3;
+  margin-bottom:14px;
+  color:var(--text);
+}
+
+.card-meta{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;margin-bottom:14px;
+}
+
+.meta-item{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;
+}
+
+.meta-label{
+  font-family:'Space Mono',monospace;
+  font-size:.58rem;color:var(--muted);
+  letter-spacing:.5px;text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.meta-value{
+  font-size:.9rem;font-weight:600;
+  color:var(--text);
+}
+
+.countdown{
+  font-family:'Space Mono',monospace;
+  font-size:.85rem;font-weight:700;
+  color:var(--cyan);
+  text-shadow:0 0 8px rgba(0,212,255,.5);
+  letter-spacing:1px;
+}
+
+.countdown.live{color:var(--green);animation:pulse 1.2s infinite;}
+.countdown.soon{color:var(--orange);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+.card-footer{
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+
+.card-btn{
+  flex:1;min-width:100px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:.8rem;font-weight:700;
+  letter-spacing:.5px;
+  padding:7px 12px;border-radius:8px;
+  border:1px solid;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  text-decoration:none;
+}
+
+.btn-open{
+  background:transparent;
+  border-color:var(--cyan);color:var(--cyan);
+}
+.btn-open:hover{background:rgba(0,212,255,.1);}
+
+.btn-wa{
+  background:transparent;
+  border-color:var(--wa);color:var(--wa);
+}
+.btn-wa:hover{background:rgba(37,211,102,.1);}
+
+/* ─── STATUS BAR ─── */
+.status-bar{
+  font-family:'Space Mono',monospace;
+  font-size:.7rem;
+  color:var(--muted);
+  text-align:center;
+  margin-top:24px;
+  padding:10px;
+  border-top:1px solid var(--border);
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{
+  text-align:center;padding:60px 20px;
+  color:var(--muted);
+}
+
+.empty-icon{font-size:3rem;margin-bottom:12px;opacity:.4;}
+.empty-text{font-size:1rem;font-weight:600;}
+
+/* ─── LOADING ─── */
+.loading-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;
+}
+
+.skeleton{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;height:200px;
+  position:relative;overflow:hidden;
+}
+
+.skeleton::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);
+  animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+
+/* ─────────────────────────────────────────
+   WHATSAPP PAGE
+───────────────────────────────────────── */
+.wa-container{
+  max-width:480px;margin:0 auto;
+  border:1px solid var(--border2);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+
+.wa-header{
+  background:var(--wa-hdr);
+  padding:14px 18px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.wa-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--wa),#128c7e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+
+.wa-name{font-size:1rem;font-weight:700;color:#fff;}
+.wa-status{font-size:.75rem;color:var(--wa);margin-top:1px;}
+
+.wa-msgs{
+  background:var(--wa-bg);
+  min-height:420px;max-height:500px;overflow-y:auto;
+  padding:16px 14px;
+  display:flex;flex-direction:column;gap:10px;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.wa-msgs::-webkit-scrollbar{width:4px;}
+.wa-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+
+.wa-date-sep{
+  text-align:center;
+  font-size:.72rem;color:#8696a0;
+  background:rgba(17,27,33,.7);
+  padding:4px 12px;border-radius:8px;
+  align-self:center;
+}
+
+.wa-bubble{
+  max-width:85%;
+  padding:8px 12px;
+  border-radius:8px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:.95rem;line-height:1.5;
+  position:relative;
+}
+
+.wa-bubble.sent{
+  background:var(--wa-bub);color:#e9edef;
+  align-self:flex-end;border-radius:8px 0 8px 8px;
+}
+
+.wa-bubble.received{
+  background:var(--wa-rec);color:#e9edef;
+  align-self:flex-start;border-radius:0 8px 8px 8px;
+}
+
+.bubble-title{font-weight:700;font-size:1rem;color:#fff;margin-bottom:3px;}
+.bubble-time{
+  font-size:.65rem;color:#8696a0;
+  text-align:right;margin-top:4px;
+}
+
+.bubble-tick{color:var(--wa);margin-left:3px;}
+
+.wa-input{
+  background:#1f2c34;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+
+.wa-input input{
+  flex:1;
+  background:rgba(255,255,255,.05);
+  border:none;border-radius:20px;
+  padding:9px 14px;
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:.95rem;
+  outline:none;
+}
+
+.wa-input input::placeholder{color:#8696a0;}
+
+.wa-send{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--wa);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;transition:transform .1s;
+  flex-shrink:0;
+}
+
+.wa-send:hover{transform:scale(1.08);}
+
+.wa-note{
+  font-family:'Space Mono',monospace;
+  font-size:.68rem;color:var(--muted);
+  text-align:center;margin-top:12px;
+  line-height:1.6;
+}
+
+/* ─────────────────────────────────────────
+   TODO PAGE
+───────────────────────────────────────── */
+.todo-add-box{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:24px;
+}
+
+.todo-add-box h3{
+  font-size:1.1rem;font-weight:700;
+  color:var(--cyan);margin-bottom:16px;
+  font-family:'Orbitron',monospace;
+  font-size:.9rem;letter-spacing:1px;
+}
+
+.input-row{
+  display:grid;
+  grid-template-columns:1fr 200px 160px;
+  gap:10px;margin-bottom:10px;
+}
+
+@media(max-width:680px){
+  .input-row{grid-template-columns:1fr;}
+}
+
+.form-input{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:10px 14px;
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:.95rem;
+  outline:none;
+  width:100%;
+  transition:border-color .2s;
+}
+
+.form-input:focus{border-color:var(--cyan);}
+.form-input::placeholder{color:var(--muted);}
+
+/* dark datetime picker */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);opacity:.5;cursor:pointer;
+}
+
+.add-btn{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.95rem;font-weight:700;
+  letter-spacing:.5px;
+  padding:10px 20px;
+  border-radius:8px;
+  border:none;
+  background:linear-gradient(135deg,var(--cyan),#0099cc);
+  color:#000;cursor:pointer;
+  transition:opacity .2s,transform .1s;
+  width:100%;
+}
+
+.add-btn:hover{opacity:.9;}
+.add-btn:active{transform:scale(.98);}
+
+.todo-filters{
+  display:flex;gap:8px;margin-bottom:16px;
+  flex-wrap:wrap;
+}
+
+.todo-filter-btn{
+  font-family:'Space Mono',monospace;
+  font-size:.7rem;font-weight:700;
+  padding:5px 14px;border-radius:99px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--muted);
+  cursor:pointer;letter-spacing:.5px;
+  transition:all .2s;
+}
+
+.todo-filter-btn.active{
+  background:var(--cyan);color:#000;border-color:var(--cyan);
+}
+
+/* ─── TODO LIST ─── */
+.todo-list{display:flex;flex-direction:column;gap:10px;}
+
+.todo-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+
+.todo-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--cyan);
+}
+
+.todo-item.done::before{background:var(--green);}
+.todo-item.done{opacity:.6;}
+.todo-item.overdue::before{background:var(--red);}
+
+.todo-check{
+  width:22px;height:22px;flex-shrink:0;
+  border:2px solid var(--border2);
+  border-radius:6px;cursor:pointer;
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;margin-top:2px;
+}
+
+.todo-check:hover{border-color:var(--cyan);}
+.todo-item.done .todo-check{
+  background:var(--green);border-color:var(--green);
+}
+
+.todo-body{flex:1;}
+
+.todo-title{
+  font-size:1rem;font-weight:600;
+  margin-bottom:4px;
+}
+
+.todo-item.done .todo-title{text-decoration:line-through;color:var(--muted);}
+
+.todo-due{
+  font-family:'Space Mono',monospace;
+  font-size:.7rem;color:var(--muted);
+}
+
+.todo-due.soon-due{color:var(--orange);}
+.todo-due.overdue-due{color:var(--red);}
+
+.todo-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+
+.todo-wa-btn{
+  font-family:'Rajdhani',sans-serif;
+  font-size:.78rem;font-weight:700;
+  padding:5px 12px;border-radius:7px;
+  border:1px solid var(--wa);
+  background:transparent;color:var(--wa);
+  cursor:pointer;transition:all .15s;
+  white-space:nowrap;
+  display:flex;align-items:center;gap:5px;
+}
+
+.todo-wa-btn:hover{background:rgba(37,211,102,.1);}
+
+.todo-del{
+  width:28px;height:28px;border-radius:7px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+
+.todo-del:hover{color:var(--red);border-color:var(--red);}
+
+.todo-stats{
+  font-family:'Space Mono',monospace;
+  font-size:.75rem;color:var(--muted);
+  margin-bottom:12px;
+  display:flex;gap:16px;flex-wrap:wrap;
+}
+
+.stat{color:var(--text);}
+.stat span{color:var(--cyan);}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:#1a2840;border:1px solid var(--border2);
+  border-radius:10px;padding:12px 20px;
+  font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;
+  color:var(--text);
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  z-index:9998;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+}
+
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){
+  nav{padding:0 12px;}
+  .logo{font-size:1rem;}
+  .tab-btn{padding:6px 10px;font-size:.82rem;}
+  .page{padding:16px 12px;}
+  .contest-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ NAVBAR ══════════════════════════════ -->
+<nav>
+  <div class="logo">CONTEST<span>PULSE</span></div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPage('contests',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Contests
+    </button>
+    <button class="tab-btn" onclick="showPage('whatsapp',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Reminders
+      <span class="badge" id="wa-badge" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" onclick="showPage('todo',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      To-Do
+      <span class="badge" id="todo-badge" style="display:none">0</span>
+    </button>
+  </div>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadContests()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    Refresh
+  </button>
+</nav>
+
+<!-- ══════════════════════════════ CONTESTS PAGE ══════════════════════════════ -->
+<div id="page-contests" class="page active">
+  <div class="page-header">
+    <div class="page-title"><span class="accent">UPCOMING</span> CONTESTS</div>
+    <div id="last-updated" style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted)"></div>
+  </div>
+
+  <div class="filters" id="platform-filters">
+    <button class="filter-pill active" data-platform="All" onclick="filterPlatform('All',this)">All</button>
+    <button class="filter-pill" data-platform="LeetCode" onclick="filterPlatform('LeetCode',this)">LeetCode</button>
+    <button class="filter-pill" data-platform="Codeforces" onclick="filterPlatform('Codeforces',this)">Codeforces</button>
+    <button class="filter-pill" data-platform="CodeChef" onclick="filterPlatform('CodeChef',this)">CodeChef</button>
+    <button class="filter-pill" data-platform="AtCoder" onclick="filterPlatform('AtCoder',this)">AtCoder</button>
+    <button class="filter-pill" data-platform="HackerRank" onclick="filterPlatform('HackerRank',this)">HackerRank</button>
+  </div>
+
+  <div id="contest-container">
+    <div class="loading-grid" id="skeleton-grid">
+      ${Array(6).fill('<div class="skeleton"></div>').join('')}
+    </div>
+  </div>
+
+  <div class="status-bar" id="status-bar"></div>
+</div>
+
+<!-- ══════════════════════════════ WHATSAPP PAGE ══════════════════════════════ -->
+<div id="page-whatsapp" class="page">
+  <div class="page-header">
+    <div class="page-title"><span class="accent">WHATSAPP</span> REMINDERS</div>
+  </div>
+
+  <div class="wa-container">
+    <div class="wa-header">
+      <div class="wa-avatar">🏆</div>
+      <div>
+        <div class="wa-name">ContestBot</div>
+        <div class="wa-status">● Online — Your reminder hub</div>
+      </div>
+    </div>
+    <div class="wa-msgs" id="wa-msgs">
+      <div class="wa-date-sep">Today</div>
+      <div class="wa-bubble received">
+        <div class="bubble-title">👋 Hey Coder!</div>
+        I'm your personal contest reminder bot. Tap <strong>Remind on WhatsApp</strong> on any contest or todo to send yourself a reminder!
+        <div class="bubble-time">Just now</div>
+      </div>
+    </div>
+    <div class="wa-input">
+      <input type="text" id="wa-manual-input" placeholder="Type a note to yourself..." onkeypress="waManualSend(event)">
+      <button class="wa-send" onclick="waManualSendBtn()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="wa-note">
+    📲 Clicking "Open WhatsApp" below opens WhatsApp with a pre-filled message to yourself. Just tap Send — it's free and instant!<br>
+    <span style="color:var(--cyan)">Enable browser notifications</span> for in-app alerts even when WhatsApp is closed.
+  </div>
+</div>
+
+<!-- ══════════════════════════════ TODO PAGE ══════════════════════════════ -->
+<div id="page-todo" class="page">
+  <div class="page-header">
+    <div class="page-title"><span class="accent">TASK</span> TRACKER</div>
+  </div>
+
+  <div class="todo-add-box">
+    <h3>⚡ ADD NEW TASK</h3>
+    <div class="input-row">
+      <input class="form-input" id="todo-title" type="text" placeholder="Task title (e.g. Practice DP problems)" maxlength="100">
+      <input class="form-input" id="todo-date" type="datetime-local">
+      <input class="form-input" id="todo-phone" type="tel" placeholder="Your WhatsApp number" title="Include country code e.g. 919876543210">
+    </div>
+    <button class="add-btn" onclick="addTodo()">+ Add Task</button>
+  </div>
+
+  <div id="todo-stats" class="todo-stats"></div>
+
+  <div class="todo-filters">
+    <button class="todo-filter-btn active" data-filter="all" onclick="setTodoFilter('all',this)">All</button>
+    <button class="todo-filter-btn" data-filter="pending" onclick="setTodoFilter('pending',this)">Pending</button>
+    <button class="todo-filter-btn" data-filter="done" onclick="setTodoFilter('done',this)">Done</button>
+    <button class="todo-filter-btn" data-filter="overdue" onclick="setTodoFilter('overdue',this)">Overdue</button>
+  </div>
+
+  <div class="todo-list" id="todo-list"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let allContests = [];
+let activePlatform = 'All';
+let bookmarks = JSON.parse(localStorage.getItem('cp_bookmarks') || '[]');
+let registered = JSON.parse(localStorage.getItem('cp_registered') || '[]');
+let todos = JSON.parse(localStorage.getItem('cp_todos') || '[]');
+let waMessages = JSON.parse(localStorage.getItem('cp_wa_msgs') || '[]');
+let todoFilter = 'all';
+let countdownIntervals = {};
+let contestPhone = localStorage.getItem('cp_phone') || '';
+
+// ══════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function formatDate(d){
+  return new Date(d).toLocaleString('en-IN',{
+    month:'short',day:'numeric',
+    hour:'2-digit',minute:'2-digit',hour12:true
+  });
+}
+
+function formatDuration(secs){
+  const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60);
+  if(h>0 && m>0) return `${h}h ${m}m`;
+  if(h>0) return `${h}h`;
+  return `${m}m`;
+}
+
+function timeAgo(d){
+  const now = new Date(), then = new Date(d);
+  const diff = Math.abs(now-then)/1000;
+  if(diff<60) return 'just now';
+  if(diff<3600) return `${Math.floor(diff/60)}m ago`;
+  if(diff<86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function getPlatformFromSite(site){
+  site = (site||'').toLowerCase();
+  if(site.includes('leetcode')) return 'LeetCode';
+  if(site.includes('codeforces')) return 'Codeforces';
+  if(site.includes('codechef')) return 'CodeChef';
+  if(site.includes('atcoder')) return 'AtCoder';
+  if(site.includes('hackerrank')) return 'HackerRank';
+  if(site.includes('codingninjas')||site.includes('codestudio')) return 'CodeStudio';
+  return site || 'Other';
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='whatsapp') renderWaMessages();
+  if(name==='todo') renderTodos();
+}
+
+// ══════════════════════════════════════════════════════
+// CONTEST FETCHING
+// ══════════════════════════════════════════════════════
+async function loadContests(){
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  document.getElementById('contest-container').innerHTML = `
+    <div class="loading-grid">
+      ${Array(6).fill('<div class="skeleton"></div>').join('')}
+    </div>`;
+
+  try{
+    // Try Kontests API first (free, no auth)
+    const res = await fetch('https://kontests.net/api/v1/all');
+    if(!res.ok) throw new Error('API failed');
+    const data = await res.json();
+
+    const now = new Date();
+    allContests = data
+      .filter(c => {
+        const start = new Date(c.start_time);
+        const end = new Date(c.end_time);
+        return end > now; // not ended
+      })
+      .map((c,i) => ({
+        id: 'k_'+i,
+        name: c.name,
+        platform: getPlatformFromSite(c.site),
+        site: c.site,
+        url: c.url,
+        startTime: new Date(c.start_time),
+        endTime: new Date(c.end_time),
+        duration: parseFloat(c.duration) || 0,
+        status: c.status,
+        in24h: c.in_24_hours === 'Yes'
+      }))
+      .sort((a,b) => a.startTime - b.startTime)
+      .slice(0,40);
+
+    document.getElementById('last-updated').textContent = '⟳ Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('status-bar').textContent = `✓ ${allContests.length} upcoming contests loaded from Kontests.net`;
+
+  } catch(e) {
+    console.warn('Kontests API failed, using sample data:', e);
+    allContests = getSampleContests();
+    document.getElementById('status-bar').textContent = '⚠ Live data unavailable — showing sample contests. Check your connection.';
+  }
+
+  renderContests();
+  btn.classList.remove('spinning');
+}
+
+// Sample data fallback
+function getSampleContests(){
+  const now = new Date();
+  const addH = h => new Date(now.getTime() + h*3600000);
+  return [
+    { id:'s1', name:'LeetCode Weekly Contest 423', platform:'LeetCode', url:'https://leetcode.com/contest/', startTime:addH(2), endTime:addH(3.5), duration:5400 },
+    { id:'s2', name:'Codeforces Round 987 (Div. 2)', platform:'Codeforces', url:'https://codeforces.com/contests', startTime:addH(6), endTime:addH(8.5), duration:9000 },
+    { id:'s3', name:'CodeChef Starters 118', platform:'CodeChef', url:'https://www.codechef.com/contests', startTime:addH(14), endTime:addH(17), duration:10800 },
+    { id:'s4', name:'AtCoder Regular Contest 175', platform:'AtCoder', url:'https://atcoder.jp/contests/', startTime:addH(20), endTime:addH(22), duration:7200 },
+    { id:'s5', name:'HackerRank Weekly Challenge 50', platform:'HackerRank', url:'https://www.hackerrank.com/contests', startTime:addH(30), endTime:addH(33), duration:10800 },
+    { id:'s6', name:'LeetCode Biweekly Contest 145', platform:'LeetCode', url:'https://leetcode.com/contest/', startTime:addH(38), endTime:addH(39.5), duration:5400 },
+    { id:'s7', name:'Codeforces Educational Round 170', platform:'Codeforces', url:'https://codeforces.com/contests', startTime:addH(50), endTime:addH(52.5), duration:9000 },
+    { id:'s8', name:'CodeChef Long Challenge May', platform:'CodeChef', url:'https://www.codechef.com/contests', startTime:addH(72), endTime:addH(240), duration:604800 },
+  ];
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER CONTESTS
+// ══════════════════════════════════════════════════════
+function filterPlatform(platform, btn){
+  activePlatform = platform;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderContests();
+}
+
+function renderContests(){
+  // clear old intervals
+  Object.values(countdownIntervals).forEach(clearInterval);
+  countdownIntervals = {};
+
+  const filtered = activePlatform==='All'
+    ? allContests
+    : allContests.filter(c=>c.platform===activePlatform);
+
+  const container = document.getElementById('contest-container');
+
+  if(filtered.length===0){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No contests found for this platform right now.</div></div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="contest-grid" id="contest-grid"></div>`;
+  const grid = document.getElementById('contest-grid');
+
+  filtered.forEach(c => {
+    const isBm = bookmarks.includes(c.id);
+    const isReg = registered.includes(c.id);
+    const card = document.createElement('div');
+    card.className = `contest-card${isBm?' bookmarked':''}${isReg?' registered':''}`;
+    card.dataset.id = c.id;
+    card.dataset.platform = c.platform;
+
+    const dur = c.duration > 0 ? formatDuration(c.duration) : '?';
+
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-platform">${c.platform}</span>
+        <div class="card-actions">
+          <button class="icon-btn${isBm?' active-bm':''}" title="Bookmark" onclick="toggleBookmark('${c.id}',this)">
+            ${isBm ? '🔖' : '🔗'}
+          </button>
+          <button class="icon-btn${isReg?' active-reg':''}" title="Mark Registered" onclick="toggleRegistered('${c.id}',this)">
+            ${isReg ? '✅' : '📝'}
+          </button>
+        </div>
+      </div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-label">Starts</div>
+          <div class="meta-value">${formatDate(c.startTime)}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Duration</div>
+          <div class="meta-value">${dur}</div>
+        </div>
+        <div class="meta-item" style="grid-column:1/-1">
+          <div class="meta-label">Countdown</div>
+          <div class="countdown" id="cd-${c.id}">Calculating...</div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a class="card-btn btn-open" href="${c.url}" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open
+        </a>
+        <button class="card-btn btn-wa" onclick="sendContestReminder('${c.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Remind
+        </button>
+      </div>`;
+
+    grid.appendChild(card);
+    startCountdown(c);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// COUNTDOWN
+// ══════════════════════════════════════════════════════
+function startCountdown(c){
+  function update(){
+    const el = document.getElementById('cd-'+c.id);
+    if(!el){ clearInterval(countdownIntervals[c.id]); return; }
+
+    const now = new Date();
+    const start = new Date(c.startTime);
+    const end = new Date(c.endTime);
+
+    if(now >= end){
+      el.textContent = 'Ended'; el.className='countdown'; clearInterval(countdownIntervals[c.id]); return;
+    }
+    if(now >= start){
+      el.textContent = '🔴 LIVE NOW'; el.className='countdown live'; return;
+    }
+    const diff = Math.floor((start - now)/1000);
+    const d=Math.floor(diff/86400), h=Math.floor((diff%86400)/3600), m=Math.floor((diff%3600)/60), s=diff%60;
+    const parts = [];
+    if(d>0) parts.push(`${d}d`);
+    parts.push(`${String(h).padStart(2,'0')}h`);
+    parts.push(`${String(m).padStart(2,'0')}m`);
+    parts.push(`${String(s).padStart(2,'0')}s`);
+    el.textContent = parts.join(' ');
+    el.className = 'countdown' + (diff < 3600 ? ' soon' : '');
+  }
+  update();
+  countdownIntervals[c.id] = setInterval(update, 1000);
+}
+
+// ══════════════════════════════════════════════════════
+// BOOKMARKS & REGISTERED
+// ══════════════════════════════════════════════════════
+function toggleBookmark(id, btn){
+  const idx = bookmarks.indexOf(id);
+  if(idx===-1){ bookmarks.push(id); btn.textContent='🔖'; btn.classList.add('active-bm'); showToast('🔖 Bookmarked!'); }
+  else { bookmarks.splice(idx,1); btn.textContent='🔗'; btn.classList.remove('active-bm'); showToast('Bookmark removed'); }
+  localStorage.setItem('cp_bookmarks', JSON.stringify(bookmarks));
+  document.querySelector(`.contest-card[data-id="${id}"]`)?.classList.toggle('bookmarked', bookmarks.includes(id));
+}
+
+function toggleRegistered(id, btn){
+  const idx = registered.indexOf(id);
+  if(idx===-1){ registered.push(id); btn.textContent='✅'; btn.classList.add('active-reg'); showToast('✅ Marked as registered!'); }
+  else { registered.splice(idx,1); btn.textContent='📝'; btn.classList.remove('active-reg'); showToast('Registration removed'); }
+  localStorage.setItem('cp_registered', JSON.stringify(registered));
+  document.querySelector(`.contest-card[data-id="${id}"]`)?.classList.toggle('registered', registered.includes(id));
+}
+
+// ══════════════════════════════════════════════════════
+// WHATSAPP REMINDERS
+// ══════════════════════════════════════════════════════
+function sendContestReminder(id){
+  const c = allContests.find(x=>x.id===id);
+  if(!c) return;
+
+  const phone = promptPhone();
+  const msg = `⏰ *ContestPulse Reminder*\n\n🏆 *${c.name}*\n📅 Start: ${formatDate(c.startTime)}\n⏱ Duration: ${formatDuration(c.duration)}\n🔗 ${c.url}\n\n_All the best! 💪_`;
+
+  addWaMessage({
+    type:'sent',
+    title: c.name,
+    text: `📌 Contest reminder set for ${formatDate(c.startTime)}`,
+    time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  });
+
+  openWhatsApp(phone, msg);
+  updateWaBadge();
+  showToast('📲 Opening WhatsApp...');
+}
+
+function promptPhone(){
+  let phone = localStorage.getItem('cp_phone') || '';
+  if(!phone){
+    phone = prompt('Enter your WhatsApp number (with country code, e.g. 919876543210):','');
+    if(phone) localStorage.setItem('cp_phone', phone.replace(/\D/g,''));
+  }
+  return phone ? phone.replace(/\D/g,'') : '';
+}
+
+function openWhatsApp(phone, msg){
+  const encoded = encodeURIComponent(msg);
+  const url = phone
+    ? `https://wa.me/${phone}?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`;
+  window.open(url,'_blank');
+}
+
+function addWaMessage(msg){
+  waMessages.push(msg);
+  localStorage.setItem('cp_wa_msgs', JSON.stringify(waMessages));
+  if(document.getElementById('page-whatsapp').classList.contains('active')) renderWaMessages();
+}
+
+function renderWaMessages(){
+  const container = document.getElementById('wa-msgs');
+  // Keep welcome message
+  const welcome = container.querySelector('.wa-bubble.received');
+  const dateSep = container.querySelector('.wa-date-sep');
+  container.innerHTML='';
+  container.appendChild(dateSep);
+  container.appendChild(welcome);
+
+  waMessages.forEach(m => {
+    const bubble = document.createElement('div');
+    bubble.className = `wa-bubble ${m.type}`;
+    bubble.innerHTML = `
+      <div class="bubble-title">${m.title||''}</div>
+      ${m.text}
+      <div class="bubble-time">${m.time} <span class="bubble-tick">✓✓</span></div>`;
+    container.appendChild(bubble);
+  });
+
+  container.scrollTop = container.scrollHeight;
+  updateWaBadge();
+}
+
+function updateWaBadge(){
+  const badge = document.getElementById('wa-badge');
+  const n = waMessages.length;
+  if(n>0){ badge.textContent=n; badge.style.display='inline-flex'; }
+  else badge.style.display='none';
+}
+
+function waManualSend(e){ if(e.key==='Enter') waManualSendBtn(); }
+
+function waManualSendBtn(){
+  const input = document.getElementById('wa-manual-input');
+  const text = input.value.trim();
+  if(!text) return;
+
+  const phone = promptPhone();
+  const msg = `📝 ${text}`;
+  addWaMessage({
+    type:'sent',
+    title:'My Note',
+    text: text,
+    time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  });
+  openWhatsApp(phone, msg);
+  input.value='';
+}
+
+// ══════════════════════════════════════════════════════
+// TODO
+// ══════════════════════════════════════════════════════
+function addTodo(){
+  const title = document.getElementById('todo-title').value.trim();
+  const dateVal = document.getElementById('todo-date').value;
+  const phone = document.getElementById('todo-phone').value.trim();
+
+  if(!title){ showToast('⚠ Please enter a task title'); return; }
+
+  if(phone) localStorage.setItem('cp_phone', phone.replace(/\D/g,''));
+
+  const todo = {
+    id: 'td_'+Date.now(),
+    title,
+    due: dateVal ? new Date(dateVal).toISOString() : null,
+    done: false,
+    createdAt: new Date().toISOString()
+  };
+
+  todos.unshift(todo);
+  saveTodos();
+  renderTodos();
+  updateTodoBadge();
+  showToast('✅ Task added!');
+
+  document.getElementById('todo-title').value='';
+  document.getElementById('todo-date').value='';
+}
+
+function setTodoFilter(f, btn){
+  todoFilter = f;
+  document.querySelectorAll('.todo-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTodos();
+}
+
+function renderTodos(){
+  const now = new Date();
+  const filtered = todos.filter(t => {
+    if(todoFilter==='pending') return !t.done;
+    if(todoFilter==='done') return t.done;
+    if(todoFilter==='overdue') return !t.done && t.due && new Date(t.due)<now;
+    return true;
+  });
+
+  const list = document.getElementById('todo-list');
+  const total=todos.length, done=todos.filter(t=>t.done).length, pending=todos.filter(t=>!t.done).length;
+  const overdue=todos.filter(t=>!t.done&&t.due&&new Date(t.due)<now).length;
+
+  document.getElementById('todo-stats').innerHTML = `
+    <span class="stat">Total: <span>${total}</span></span>
+    <span class="stat">Pending: <span style="color:var(--orange)">${pending}</span></span>
+    <span class="stat">Done: <span style="color:var(--green)">${done}</span></span>
+    <span class="stat" style="${overdue?'color:var(--red)':''}">Overdue: <span style="color:var(--red)">${overdue}</span></span>`;
+
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">No tasks here!</div></div>';
+    return;
+  }
+
+  list.innerHTML='';
+  filtered.forEach(t => {
+    const isOverdue = !t.done && t.due && new Date(t.due) < now;
+    const isSoon = !t.done && t.due && (new Date(t.due)-now)/1000/3600 < 2;
+
+    const item = document.createElement('div');
+    item.className = `todo-item${t.done?' done':''}${isOverdue?' overdue':''}`;
+
+    let dueLabel = '';
+    if(t.due){
+      dueLabel = formatDate(t.due);
+      if(isOverdue) dueLabel = '⚠ OVERDUE — ' + dueLabel;
+      else if(isSoon) dueLabel = '⏰ Soon — ' + dueLabel;
+    }
+
+    item.innerHTML = `
+      <button class="todo-check" onclick="toggleTodo('${t.id}')">
+        ${t.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </button>
+      <div class="todo-body">
+        <div class="todo-title">${t.title}</div>
+        ${t.due ? `<div class="todo-due${isOverdue?' overdue-due':isSoon?' soon-due':''}">📅 ${dueLabel}</div>` : ''}
+      </div>
+      <div class="todo-actions">
+        ${!t.done ? `<button class="todo-wa-btn" onclick="sendTodoReminder('${t.id}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          WhatsApp
+        </button>` : ''}
+        <button class="todo-del" onclick="deleteTodo('${t.id}')" title="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>`;
+
+    list.appendChild(item);
+  });
+
+  updateTodoBadge();
+}
+
+function toggleTodo(id){
+  const t = todos.find(x=>x.id===id);
+  if(t){ t.done=!t.done; saveTodos(); renderTodos(); showToast(t.done ? '✅ Task done!' : 'Marked as pending'); }
+}
+
+function deleteTodo(id){
+  todos = todos.filter(x=>x.id!==id);
+  saveTodos(); renderTodos(); showToast('🗑 Task deleted');
+}
+
+function sendTodoReminder(id){
+  const t = todos.find(x=>x.id===id);
+  if(!t) return;
+
+  const phone = promptPhone();
+  const dueText = t.due ? `\n📅 Due: ${formatDate(t.due)}` : '';
+  const msg = `📝 *Task Reminder*\n\n✅ *${t.title}*${dueText}\n\n_Don't forget to complete this! 💪_\n\n— ContestPulse`;
+
+  addWaMessage({
+    type:'sent',
+    title: t.title,
+    text: `📋 Task reminder${t.due ? ' — Due '+formatDate(t.due) : ''}`,
+    time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  });
+
+  openWhatsApp(phone, msg);
+  showToast('📲 Opening WhatsApp...');
+}
+
+function saveTodos(){ localStorage.setItem('cp_todos', JSON.stringify(todos)); }
+
+function updateTodoBadge(){
+  const now = new Date();
+  const pending = todos.filter(t=>!t.done).length;
+  const badge = document.getElementById('todo-badge');
+  if(pending>0){ badge.textContent=pending; badge.style.display='inline-flex'; }
+  else badge.style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+// BROWSER NOTIFICATIONS
+// ══════════════════════════════════════════════════════
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+
+function scheduleNotif(title, body, when){
+  const delay = new Date(when) - new Date();
+  if(delay > 0 && delay < 86400000){
+    setTimeout(()=>{
+      if(Notification.permission==='granted'){
+        new Notification(title, { body, icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏆</text></svg>' });
+      }
+    }, delay);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  requestNotifPermission();
+  loadContests();
+  renderTodos();
+  updateWaBadge();
+  updateTodoBadge();
+});
+</script>
+</body>
+</html>
